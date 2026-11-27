@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import { Loader2, Upload } from 'lucide-react'
 import { AppProvider, useApp } from '@/context/AppContext'
 import { Tabs } from '@/components/ui/tabs'
@@ -7,6 +7,7 @@ import { WelcomeHero } from '@/components/onboarding/WelcomeHero'
 import { ImportSuccessToast } from '@/components/layout/AppChrome'
 import { PersistenceToggle } from '@/components/layout/PersistenceToggle'
 import { countPendingDuplicates } from '@/lib/duplicates'
+import { LandingPage } from '@/landing/LandingPage'
 
 const UploadZone = lazy(() =>
   import('@/components/upload/UploadZone').then((m) => ({ default: m.UploadZone })),
@@ -32,10 +33,15 @@ const ExportReportButton = lazy(() =>
 
 function PanelFallback() {
   return (
-    <div className="flex items-center justify-center py-16 text-[var(--color-muted-foreground)]">
+    <div className="flex items-center justify-center rounded-[var(--radius-lg)] bg-[var(--color-card)] py-16 text-[var(--color-muted-foreground)]">
       <Loader2 className="h-5 w-5 animate-spin" />
     </div>
   )
+}
+
+function readWantsApp(): boolean {
+  if (typeof window === 'undefined') return false
+  return window.location.hash === '#app' || sessionStorage.getItem('sa-entered-app') === '1'
 }
 
 function AppContent() {
@@ -51,6 +57,7 @@ function AppContent() {
     accounts,
   } = useApp()
 
+  const [inApp, setInApp] = useState(readWantsApp)
   const pendingDupes = countPendingDuplicates(duplicateGroups)
   const hasData = transactionCount > 0
 
@@ -59,6 +66,28 @@ function AppContent() {
     const timer = setTimeout(dismissImportSummary, 6000)
     return () => clearTimeout(timer)
   }, [importSummary, dismissImportSummary])
+
+  useEffect(() => {
+    if (hasData && !inApp) {
+      setInApp(true)
+      sessionStorage.setItem('sa-entered-app', '1')
+      if (window.location.hash !== '#app') {
+        window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}#app`)
+      }
+    }
+  }, [hasData, inApp])
+
+  const enterApp = () => {
+    setInApp(true)
+    sessionStorage.setItem('sa-entered-app', '1')
+    window.location.hash = 'app'
+  }
+
+  const backToLanding = () => {
+    setInApp(false)
+    sessionStorage.removeItem('sa-entered-app')
+    window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`)
+  }
 
   const tabs = [
     { id: 'dashboard', label: 'Overview' },
@@ -74,57 +103,79 @@ function AppContent() {
     },
   ]
 
-  if (!ready) {
+  if (!ready && inApp) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="flex flex-col items-center gap-3 text-[var(--color-muted-foreground)]">
-          <Loader2 className="h-8 w-8 animate-spin" />
-          <p>Starting…</p>
+      <div className="flex min-h-screen items-center justify-center bg-[var(--color-background)] text-[var(--color-mist)]">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-[var(--color-lime)]" />
+          <p className="text-xs font-medium tracking-[0.06em] uppercase">Starting…</p>
         </div>
       </div>
     )
   }
 
-  return (
-    <div className="min-h-screen pb-[env(safe-area-inset-bottom)]">
-      <header className="sticky top-0 z-40 border-b border-[var(--color-border)] bg-[var(--color-card)]/95 backdrop-blur supports-[backdrop-filter]:bg-[var(--color-card)]/80">
-        <div className="mx-auto flex max-w-7xl items-start justify-between gap-3 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:items-center sm:gap-4 sm:px-6 sm:py-4">
-          <div className="min-w-0">
-            <h1 className="text-lg font-bold tracking-tight sm:text-xl">Statement Analyzer</h1>
-            <p className="truncate text-xs text-[var(--color-muted-foreground)] sm:text-sm">
-              {hasData
-                ? `${accounts.length} account${accounts.length !== 1 ? 's' : ''} · ${transactionCount.toLocaleString()} transactions`
-                : 'Import a statement to get started'}
-            </p>
-          </div>
-          <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
-            <PersistenceToggle />
-            {hasData && (
-              <>
-                <Suspense fallback={null}>
-                  <ExportReportButton />
-                </Suspense>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="min-h-9"
-                  onClick={() => setActiveTab('upload')}
-                >
-                  <Upload className="h-3.5 w-3.5 sm:mr-1.5" />
-                  <span className="hidden sm:inline">Import</span>
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
+  if (!inApp && !hasData) {
+    return <LandingPage onStart={enterApp} />
+  }
 
-      <main className="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-6">
+  return (
+    <div className="min-h-screen bg-[var(--color-background)] pb-[env(safe-area-inset-bottom)] text-[var(--color-card-foreground)]">
+      <div className="px-3 pt-3 sm:px-3">
+        <header className="sticky top-3 z-40 rounded-[var(--radius-lg)] bg-[var(--color-card)]">
+          <div className="mx-auto flex max-w-7xl items-start justify-between gap-3 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:items-center sm:gap-4 sm:px-6 sm:py-4">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2.5">
+                <span
+                  className="inline-block h-[14px] w-[14px] shrink-0 rounded-full"
+                  style={{
+                    background: 'linear-gradient(135deg, var(--color-lilac) 58%, var(--color-lime) 58%)',
+                  }}
+                  aria-hidden
+                />
+                <button
+                  type="button"
+                  onClick={backToLanding}
+                  className="font-[family-name:var(--font-display)] text-left text-base font-semibold tracking-[0.01em] uppercase sm:text-lg"
+                  title="Back to homepage"
+                >
+                  Analyzer
+                </button>
+              </div>
+              <p className="mt-1 truncate text-xs tracking-[0.04em] text-[var(--color-caption)] uppercase sm:text-[11px]">
+                {hasData
+                  ? `${accounts.length} account${accounts.length !== 1 ? 's' : ''} · ${transactionCount.toLocaleString()} transactions`
+                  : 'Import a statement to get started'}
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
+              <PersistenceToggle />
+              {hasData && (
+                <>
+                  <Suspense fallback={null}>
+                    <ExportReportButton />
+                  </Suspense>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="min-h-9"
+                    onClick={() => setActiveTab('upload')}
+                  >
+                    <Upload className="h-3.5 w-3.5 sm:mr-1" />
+                    <span className="hidden sm:inline">Import</span>
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+        </header>
+      </div>
+
+      <main className="mx-auto max-w-7xl px-3 py-3 sm:px-3 sm:py-3">
         {!hasData ? (
           <WelcomeHero />
         ) : (
           <>
-            <div className="mb-6">
+            <div className="mb-3 rounded-[var(--radius-lg)] bg-[var(--color-graphite)] p-2 sm:p-2.5">
               <Tabs
                 tabs={tabs}
                 active={activeTab === 'upload' ? '' : activeTab}
@@ -134,11 +185,11 @@ function AppContent() {
 
             <Suspense fallback={<PanelFallback />}>
               {activeTab === 'upload' && (
-                <div className="mx-auto max-w-2xl space-y-4">
+                <div className="mx-auto max-w-2xl space-y-4 rounded-[var(--radius-lg)] bg-[var(--color-card)] p-4 sm:p-6">
                   <button
                     type="button"
                     onClick={() => setActiveTab('dashboard')}
-                    className="text-sm text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)]"
+                    className="text-xs font-medium tracking-[0.06em] text-[var(--color-caption)] uppercase hover:text-[var(--color-foreground)]"
                   >
                     ← Back to overview
                   </button>
@@ -147,21 +198,35 @@ function AppContent() {
               )}
 
               {activeTab === 'dashboard' && (
-                <div className="space-y-6">
-                  <FilterBar />
+                <div className="space-y-3">
+                  <div className="rounded-[var(--radius-lg)] bg-[var(--color-card)] p-3 sm:p-4">
+                    <FilterBar />
+                  </div>
                   <Dashboard />
                 </div>
               )}
 
               {activeTab === 'transactions' && (
-                <div className="space-y-6">
-                  <FilterBar />
-                  <TransactionTable />
+                <div className="space-y-3">
+                  <div className="rounded-[var(--radius-lg)] bg-[var(--color-card)] p-3 sm:p-4">
+                    <FilterBar />
+                  </div>
+                  <div className="rounded-[var(--radius-lg)] bg-[var(--color-card)] p-3 sm:p-4">
+                    <TransactionTable />
+                  </div>
                 </div>
               )}
 
-              {activeTab === 'review' && <ReviewPanel />}
-              {activeTab === 'recurring' && <RecurringPanel />}
+              {activeTab === 'review' && (
+                <div className="rounded-[var(--radius-lg)] bg-[var(--color-card)] p-3 sm:p-4">
+                  <ReviewPanel />
+                </div>
+              )}
+              {activeTab === 'recurring' && (
+                <div className="rounded-[var(--radius-lg)] bg-[var(--color-card)] p-3 sm:p-4">
+                  <RecurringPanel />
+                </div>
+              )}
             </Suspense>
           </>
         )}

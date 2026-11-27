@@ -14,19 +14,24 @@ type ImportStepsProps = {
 
 export function ImportSteps({ current, className }: ImportStepsProps) {
   return (
-    <ol className={cn('flex items-center gap-2', className)}>
+    <ol
+      className={cn(
+        'flex items-center justify-center gap-2 rounded-[var(--radius-pill)] bg-[var(--color-card)] px-4 py-3',
+        className,
+      )}
+    >
       {STEPS.map((step, i) => {
         const done = step.id < current
         const active = step.id === current
         return (
           <li key={step.id} className="flex items-center gap-2">
-            {i > 0 && <span className="h-px w-6 bg-[var(--color-border)] sm:w-10" />}
+            {i > 0 && <span className="h-px w-6 bg-[var(--color-mist)] sm:w-10" />}
             <div className="flex items-center gap-1.5">
               <span
                 className={cn(
                   'flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium',
-                  done && 'bg-green-600 text-white',
-                  active && !done && 'bg-[var(--color-primary)] text-white',
+                  done && 'bg-[var(--color-background)] text-[var(--color-card)]',
+                  active && !done && 'bg-[var(--color-lime)] text-[var(--color-accent-foreground)]',
                   !done && !active && 'bg-[var(--color-muted)] text-[var(--color-muted-foreground)]',
                 )}
               >
@@ -34,8 +39,8 @@ export function ImportSteps({ current, className }: ImportStepsProps) {
               </span>
               <span
                 className={cn(
-                  'hidden text-sm sm:inline',
-                  active ? 'font-medium' : 'text-[var(--color-muted-foreground)]',
+                  'hidden text-xs font-medium tracking-[0.04em] uppercase sm:inline',
+                  active ? 'text-[var(--color-foreground)]' : 'text-[var(--color-muted-foreground)]',
                 )}
               >
                 {step.label}

@@ -159,8 +159,8 @@ export function Dashboard() {
                   />
                   <Tooltip formatter={(v) => fmt(Number(v))} />
                   <Legend wrapperStyle={{ fontSize: 12 }} />
-                  <Bar dataKey="income" fill="#16a34a" name="Income" radius={[4, 4, 0, 0]} isAnimationActive={false} />
-                  <Bar dataKey="expenses" fill="#dc2626" name="Expenses" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                  <Bar dataKey="income" fill="var(--color-lilac)" name="Income" radius={[999, 999, 0, 0]} isAnimationActive={false} />
+                  <Bar dataKey="expenses" fill="var(--color-graphite)" name="Expenses" radius={[999, 999, 0, 0]} isAnimationActive={false} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -190,7 +190,7 @@ export function Dashboard() {
                   <Line
                     type="monotone"
                     dataKey="net"
-                    stroke="var(--color-primary)"
+                    stroke="var(--color-background)"
                     strokeWidth={2}
                     dot={false}
                     isAnimationActive={false}

@@ -15,7 +15,7 @@ export function Toast({ message, detail, action, onDismiss, className }: ToastPr
     <div
       role="status"
       className={cn(
-        'fixed inset-x-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-50 flex max-w-sm items-start gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-card)] p-4 shadow-lg sm:inset-x-auto sm:right-4 sm:left-auto',
+        'fixed inset-x-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-50 flex max-w-sm items-start gap-3 rounded-[var(--radius-lg)] border-[1.5px] border-[var(--color-background)] bg-[var(--color-lime)] p-4 text-[var(--color-accent-foreground)] sm:inset-x-auto sm:right-4 sm:left-auto',
         className,
       )}
     >

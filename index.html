@@ -5,12 +5,45 @@
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <link rel="manifest" href="/manifest.json" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#3b5bdb" />
-    <meta name="description" content="Local financial statement analyzer — analyze bank statements in your browser" />
-    <title>Statement Analyzer</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <meta name="theme-color" content="#232323" />
+    <meta
+      name="description"
+      content="Statement Analyzer — understand bank statements in your browser. Private, local-first. Nothing is uploaded."
+    />
+    <title>Statement Analyzer — statements stay here</title>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link
+      rel="preload"
+      href="https://fonts.gstatic.com/s/geist/v5/gyByhwUxId8gMEwcGFU.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="https://fonts.gstatic.com/s/tiktoksans/v8/70l9u7g-Lm8OXGnh_Ow1sUfFMmlnhbRF425wxXH-UGeud7XItbaHtxhgqsbDdQ.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <style>
+      @font-face {
+        font-family: Geist;
+        font-style: normal;
+        font-weight: 400 500;
+        font-display: swap;
+        src: url(https://fonts.gstatic.com/s/geist/v5/gyByhwUxId8gMEwcGFU.woff2) format('woff2');
+      }
+      @font-face {
+        font-family: 'TikTok Sans';
+        font-style: normal;
+        font-weight: 500 600;
+        font-stretch: 75% 150%;
+        font-display: swap;
+        src: url(https://fonts.gstatic.com/s/tiktoksans/v8/70l9u7g-Lm8OXGnh_Ow1sUfFMmlnhbRF425wxXH-UGeud7XItbaHtxhgqsbDdQ.woff2)
+          format('woff2');
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

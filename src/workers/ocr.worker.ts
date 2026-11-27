@@ -6,10 +6,16 @@ export type OcrWorkerResponse =
   | { type: 'complete'; text: string }
   | { type: 'error'; message: string }
 
-export type OcrPageRequest = {
-  type: 'ocr_pages'
-  pages: { pageIndex: number; imageData: ImageData }[]
-}
+export type OcrPageRequest =
+  | {
+      type: 'ocr_pages'
+      pages: { pageIndex: number; imageData: ImageData }[]
+    }
+  | {
+      type: 'ocr_page'
+      pageIndex: number
+      imageData: ImageData
+    }
 
 let worker: Awaited<ReturnType<typeof createWorker>> | null = null
 
@@ -22,8 +28,30 @@ async function getWorker() {
 
 self.onmessage = async (event: MessageEvent<OcrPageRequest>) => {
   try {
-    const { pages } = event.data
+    const msg = event.data
     const w = await getWorker()
+
+    if (msg.type === 'ocr_page') {
+      self.postMessage({
+        type: 'progress',
+        pageIndex: msg.pageIndex,
+        progress: 0,
+      } satisfies OcrWorkerResponse)
+
+      const result = await w.recognize(
+        msg.imageData as unknown as Parameters<typeof w.recognize>[0],
+      )
+
+      self.postMessage({
+        type: 'page_result',
+        pageIndex: msg.pageIndex,
+        text: result.data.text,
+      } satisfies OcrWorkerResponse)
+      return
+    }
+
+    // Legacy batch path (kept for callers that still send all pages at once).
+    const { pages } = msg
     const texts: string[] = []
 
     for (const page of pages) {

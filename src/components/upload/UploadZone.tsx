@@ -13,17 +13,10 @@ import { AccountPicker } from '@/components/accounts/AccountPicker'
 import { ImportSteps } from '@/components/upload/ImportSteps'
 import { suggestAccountName, detectCurrencyFromText } from '@/lib/import-helpers'
 import type { ColumnMapping } from '@/types/transaction'
+import { maxFileBytes } from '@/lib/import-limits'
 
 type UploadZoneProps = {
   compact?: boolean
-}
-
-/** Upper bounds on file size to avoid freezing the tab or exhausting memory. */
-const MAX_SIZE_BYTES: Record<ImportFileType, number> = {
-  csv: 25 * 1024 * 1024,
-  excel: 25 * 1024 * 1024,
-  ofx: 25 * 1024 * 1024,
-  pdf: 50 * 1024 * 1024,
 }
 
 function formatBytes(bytes: number): string {
@@ -50,11 +43,11 @@ export function UploadZone({ compact = false }: UploadZoneProps) {
       const fileType = detectFileType(file)
       const id = addPendingImport(file, fileType)
 
-      const maxSize = MAX_SIZE_BYTES[fileType]
+      const maxSize = maxFileBytes(fileType)
       if (file.size > maxSize) {
         updatePendingImport(id, {
           status: 'error',
-          error: `File is too large (${formatBytes(file.size)}). The limit for ${fileType.toUpperCase()} files is ${formatBytes(maxSize)}.`,
+          error: `File is too large (${formatBytes(file.size)}). The limit for ${fileType.toUpperCase()} files on this device is ${formatBytes(maxSize)}. Try a shorter date range or CSV/OFX.`,
         })
         return
       }
@@ -90,11 +83,10 @@ export function UploadZone({ compact = false }: UploadZoneProps) {
             },
           })
         } else {
-          const [{ parsePdfBuffer, runOcrOnPdf, parseOcrText }, buffer] = await Promise.all([
-            import('@/lib/parsers/pdf'),
-            readFileAsArrayBuffer(file),
-          ])
-          let output = await parsePdfBuffer(buffer, file.name, (page, total) => {
+          // Pass the File (blob URL) so pdf.js can stream pages without an
+          // extra full-file ArrayBuffer copy — critical for long mobile PDFs.
+          const { parsePdfBuffer, runOcrOnPdf } = await import('@/lib/parsers/pdf')
+          let output = await parsePdfBuffer(file, file.name, (page, total) => {
             updatePendingImport(id, {
               status: 'parsing',
               parseProgress: Math.round((page / total) * 100),
@@ -106,10 +98,19 @@ export function UploadZone({ compact = false }: UploadZoneProps) {
             updatePendingImport(id, {
               status: 'parsing',
               parseProgress: 0,
-              error: 'Running OCR — this may take a while…',
+              error: 'Running OCR — large scanned PDFs can take several minutes…',
             })
-            const ocrText = await runOcrOnPdf(buffer, () => {})
-            output = await parseOcrText(ocrText, file.name)
+            output = await runOcrOnPdf(
+              file,
+              (page, total) => {
+                updatePendingImport(id, {
+                  status: 'parsing',
+                  parseProgress: Math.round((page / total) * 100),
+                  error: `OCR page ${page} of ${total}… keep this tab open`,
+                })
+              },
+              file.name,
+            )
           }
 
           updatePendingImport(id, {
@@ -160,8 +161,8 @@ export function UploadZone({ compact = false }: UploadZoneProps) {
 
       <Card
         className={cn(
-          'border-dashed transition-colors',
-          dragOver && 'border-[var(--color-primary)] bg-[var(--color-accent)]',
+          'border-[1.5px] border-dashed border-[var(--color-mist)] transition-colors',
+          dragOver && 'border-[var(--color-background)] bg-[var(--color-lime)]',
           compact && 'border-solid',
         )}
         onDragOver={(e) => {

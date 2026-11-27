@@ -10,11 +10,13 @@ export function Badge({ children, variant = 'default', className }: BadgeProps) 
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
-        variant === 'default' && 'bg-[var(--color-primary)] text-[var(--color-primary-foreground)]',
-        variant === 'secondary' && 'bg-[var(--color-secondary)] text-[var(--color-secondary-foreground)]',
-        variant === 'destructive' && 'bg-[var(--color-destructive)] text-[var(--color-destructive-foreground)]',
-        variant === 'outline' && 'border border-[var(--color-border)] text-[var(--color-foreground)]',
+        'inline-flex items-center rounded-[var(--radius-pill)] px-3 py-1 text-xs font-medium tracking-[0.02em]',
+        variant === 'default' && 'bg-[var(--color-lime)] text-[var(--color-accent-foreground)]',
+        variant === 'secondary' && 'bg-[var(--color-mint)] text-[var(--color-foreground)]',
+        variant === 'destructive' &&
+          'bg-[var(--color-destructive)] text-[var(--color-destructive-foreground)]',
+        variant === 'outline' &&
+          'border-[1.5px] border-current bg-transparent text-[var(--color-foreground)]',
         className,
       )}
     >
