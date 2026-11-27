@@ -21,7 +21,7 @@ export function TransfersPanel({ embedded = false }: { embedded?: boolean }) {
     () => Object.fromEntries(accounts.map((a) => [a.id, a])),
     [accounts],
   )
-  const currency = accounts[0]?.currency ?? 'NGN'
+  const currency = accounts[0]?.currency
 
   useEffect(() => {
     if (transactionCount === 0) return
@@ -129,7 +129,7 @@ function TransferLeg({
   label: string
   tx: Transaction
   accountName?: string
-  currency: string
+  currency?: string
 }) {
   return (
     <div className="rounded-md bg-[var(--color-muted)]/50 px-3 py-2 text-sm">

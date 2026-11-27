@@ -90,6 +90,7 @@ export function UploadZone({ compact = false }: UploadZoneProps) {
               has_text_layer: true,
               raw_text_preview: output.raw_text_preview,
             },
+            detectedCurrency: output.currency,
           })
         } else {
           // Pass the File (blob URL) so pdf.js can stream pages without an
@@ -245,6 +246,7 @@ type ImportCardProps = {
     csvContent?: string
     pdfRows?: { date: string; description: string; amount: number; raw_source: string }[]
     pdfMeta?: { page_count: number; has_text_layer: boolean; raw_text_preview: string }
+    detectedCurrency?: string
     error?: string
   }
   hasAccounts: boolean
@@ -295,9 +297,17 @@ function ImportCard({
   const [importing, setImporting] = useState(false)
 
   const suggestedName = suggestAccountName(imp.file.name)
-  const suggestedCurrency = detectCurrencyFromText(
-    imp.pdfMeta?.raw_text_preview ?? imp.parseResult?.preview_rows?.[0]?.Description ?? '',
-  )
+  const detectionSample = [
+    imp.file.name,
+    imp.pdfMeta?.raw_text_preview,
+    ...(imp.pdfRows?.slice(0, 30).map((r) => r.description) ?? []),
+    ...(imp.parseResult?.preview_rows?.slice(0, 10).flatMap((r) => Object.values(r).map(String)) ??
+      []),
+  ]
+    .filter(Boolean)
+    .join(' ')
+  const suggestedCurrency =
+    imp.detectedCurrency ?? detectCurrencyFromText(detectionSample)
 
   const isCsvLike = imp.fileType === 'csv' || imp.fileType === 'excel'
   const isRowsLike = imp.fileType === 'pdf' || imp.fileType === 'ofx'
@@ -404,6 +414,7 @@ function ImportCard({
             <PdfPreview
               rows={imp.pdfRows}
               meta={imp.pdfMeta}
+              currency={suggestedCurrency}
               sourceLabel={imp.fileType === 'ofx' ? 'Structured OFX/QFX' : undefined}
             />
           )}

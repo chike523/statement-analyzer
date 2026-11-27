@@ -8,7 +8,7 @@ import { formatCurrency, formatDate } from '@/lib/utils'
 export function RecurringPanel() {
   const { recurringPatterns, accounts, transactionCount, setActiveTab } = useApp()
 
-  const accountMap = Object.fromEntries(accounts.map((a) => [a.id, a.name]))
+  const accountMap = Object.fromEntries(accounts.map((a) => [a.id, a]))
 
   if (transactionCount === 0) {
     return (
@@ -46,12 +46,12 @@ export function RecurringPanel() {
             <div className="flex justify-between">
               <span className="text-[var(--color-muted-foreground)]">Amount</span>
               <span className="font-medium text-[var(--color-destructive)]">
-                {formatCurrency(pattern.amount)}
+                {formatCurrency(pattern.amount, accountMap[pattern.account_id]?.currency)}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-[var(--color-muted-foreground)]">Account</span>
-              <span>{accountMap[pattern.account_id] ?? pattern.account_id}</span>
+              <span>{accountMap[pattern.account_id]?.name ?? pattern.account_id}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-[var(--color-muted-foreground)]">Occurrences</span>

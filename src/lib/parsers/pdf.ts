@@ -102,7 +102,7 @@ export async function pdfRowsToTransactions(
   rows: ParsedRow[],
   accountId: string,
   batchId: string,
-  currency = 'USD',
+  currency: string,
 ): Promise<import('@/types/transaction').Transaction[]> {
   return rowsToTransactions(rows, accountId, batchId, currency)
 }

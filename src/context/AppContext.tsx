@@ -42,6 +42,8 @@ type PendingImport = {
   csvContent?: string
   pdfRows?: { date: string; description: string; amount: number; raw_source: string }[]
   pdfMeta?: { page_count: number; has_text_layer: boolean; raw_text_preview: string }
+  /** Explicit currency from structured formats (e.g. OFX CURDEF). */
+  detectedCurrency?: string
   status: 'pending' | 'parsing' | 'ready' | 'importing' | 'done' | 'error'
   error?: string
   parseProgress?: number
@@ -60,7 +62,7 @@ type AppContextValue = {
   transactionCount: number
   filteredCount: number
   refreshData: () => Promise<number>
-  createAccount: (name: string, currency?: string) => Promise<Account>
+  createAccount: (name: string, currency: string) => Promise<Account>
   addPendingImport: (file: File, fileType: ImportFileType) => string
   updatePendingImport: (id: string, update: Partial<PendingImport>) => void
   removePendingImport: (id: string) => void
@@ -258,7 +260,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [refreshData],
   )
 
-  const createAccount = useCallback(async (name: string, currency = 'USD') => {
+  const createAccount = useCallback(async (name: string, currency: string) => {
     const db = await loadDuckDb()
     const account: Account = { id: generateId(), name, currency }
     await db.upsertAccount(account)
@@ -296,6 +298,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!pending) throw new Error('Import not found')
 
       const account = accounts.find((a) => a.id === accountId)
+      if (!account?.currency) throw new Error('Select an account with a currency before importing')
       updatePendingImport(pendingId, { status: 'importing' })
       const batchId = generateId()
       const [{ convertCsvToTransactions }, db] = await Promise.all([
@@ -308,7 +311,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         mapping,
         accountId,
         batchId,
-        account?.currency ?? 'USD',
+        account.currency,
       )
 
       await db.insertTransactions(transactions)
@@ -327,11 +330,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const dupes = await refreshData()
       completeImport({
         filename: pending.file.name,
-        account_name: account?.name ?? 'Account',
+        account_name: account.name,
         row_count: transactions.length,
         skipped_count: skipped,
         duplicate_count: dupes,
-        currency: account?.currency ?? 'USD',
+        currency: account.currency,
       })
       return { skipped, errors }
     },
@@ -348,6 +351,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!pending) throw new Error('Import not found')
 
       const account = accounts.find((a) => a.id === accountId)
+      if (!account?.currency) throw new Error('Select an account with a currency before importing')
       updatePendingImport(pendingId, { status: 'importing' })
       const batchId = generateId()
       const [{ pdfRowsToTransactions }, db] = await Promise.all([
@@ -358,7 +362,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         rows,
         accountId,
         batchId,
-        account?.currency ?? 'USD',
+        account.currency,
       )
 
       await db.insertTransactions(transactions)
@@ -377,11 +381,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const dupes = await refreshData()
       completeImport({
         filename: pending.file.name,
-        account_name: account?.name ?? 'Account',
+        account_name: account.name,
         row_count: transactions.length,
         skipped_count: 0,
         duplicate_count: dupes,
-        currency: account?.currency ?? 'USD',
+        currency: account.currency,
       })
     },
     [pendingImports, accounts, refreshData, updatePendingImport, completeImport],

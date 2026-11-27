@@ -43,9 +43,20 @@ export function Dashboard() {
     transferIds,
   } = useApp()
 
-  const currency = accounts[0]?.currency ?? 'NGN'
+  const currency = accounts[0]?.currency
   const fmt = (n: number) => formatCurrency(n, currency)
-  const chartSuffix = currency === 'NGN' ? '₦' : currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : '$'
+  const chartSuffix =
+    currency === 'NGN'
+      ? '₦'
+      : currency === 'EUR'
+        ? '€'
+        : currency === 'GBP'
+          ? '£'
+          : currency
+            ? currency === 'USD' || currency === 'CAD' || currency === 'AUD'
+              ? '$'
+              : currency
+            : ''
 
   const activeTransferCount = transferIds.length
   const showTransferToggle = accounts.length >= 2 || transferPairs.length > 0

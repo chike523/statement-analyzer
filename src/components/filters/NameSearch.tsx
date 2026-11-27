@@ -12,7 +12,7 @@ export function NameSearch() {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
-  const currency = accounts[0]?.currency ?? 'NGN'
+  const currency = accounts[0]?.currency
 
   useEffect(() => {
     if (filters.search.trim().length < 2) {

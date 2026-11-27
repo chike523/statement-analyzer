@@ -23,7 +23,7 @@ export function TransactionTable() {
   }, [])
 
   const accountMap = Object.fromEntries(accounts.map((a) => [a.id, a]))
-  const defaultCurrency = accounts[0]?.currency ?? 'NGN'
+  const defaultCurrency = accounts[0]?.currency
 
   const virtualizer = useVirtualizer({
     count: transactions.length,

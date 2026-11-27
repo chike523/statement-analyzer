@@ -58,7 +58,7 @@ export async function gatherReportData(input: ReportInput) {
 
   const filtered = applyReportFilters(visible, filters, excludeTransferIds)
   const dates = filtered.map((t) => t.date).sort()
-  const currency = input.accounts[0]?.currency ?? filtered[0]?.currency ?? 'NGN'
+  const currency = input.accounts[0]?.currency ?? filtered[0]?.currency
 
   const largestDebits = [...filtered]
     .filter((t) => t.amount < 0)

@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils'
 
 type MerchantListProps = {
   merchants: TopMerchant[]
-  currency: string
+  currency?: string
   variant: 'debit' | 'credit'
   emptyMessage: string
   showVariants?: boolean

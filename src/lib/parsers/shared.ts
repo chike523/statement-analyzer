@@ -5,7 +5,7 @@ export async function rowsToTransactions(
   rows: ParsedRow[],
   accountId: string,
   batchId: string,
-  currency = 'USD',
+  currency: string,
 ): Promise<Transaction[]> {
   const transactions: Transaction[] = []
   for (const row of rows) {

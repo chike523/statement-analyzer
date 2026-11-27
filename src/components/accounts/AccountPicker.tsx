@@ -9,7 +9,8 @@ type AccountPickerProps = {
   value: string
   onChange: (accountId: string) => void
   suggestedName?: string
-  suggestedCurrency?: string
+  /** Prefill from statement detection; null/undefined means user must choose. */
+  suggestedCurrency?: string | null
   /** When true and no accounts exist, show create form immediately */
   preferCreate?: boolean
 }
@@ -18,24 +19,24 @@ export function AccountPicker({
   value,
   onChange,
   suggestedName = '',
-  suggestedCurrency = 'USD',
+  suggestedCurrency = null,
   preferCreate = false,
 }: AccountPickerProps) {
   const { accounts, createAccount } = useApp()
   const [creating, setCreating] = useState(preferCreate && accounts.length === 0)
   const [newName, setNewName] = useState(suggestedName)
-  const [currency, setCurrency] = useState(suggestedCurrency)
+  const [currency, setCurrency] = useState(suggestedCurrency ?? '')
 
   useEffect(() => {
     if (suggestedName && !newName) setNewName(suggestedName)
   }, [suggestedName, newName])
 
   useEffect(() => {
-    if (suggestedCurrency) setCurrency(suggestedCurrency)
+    setCurrency(suggestedCurrency ?? '')
   }, [suggestedCurrency])
 
   const handleCreate = async () => {
-    if (!newName.trim()) return
+    if (!newName.trim() || !currency) return
     const account = await createAccount(newName.trim(), currency)
     onChange(account.id)
     setCreating(false)
@@ -54,20 +55,32 @@ export function AccountPicker({
           placeholder="e.g. Main Account, GTBank Savings"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
+          onKeyDown={(e) => e.key === 'Enter' && void handleCreate()}
           autoFocus
         />
         <div className="flex gap-2">
-          <Select value={currency} onChange={(e) => setCurrency(e.target.value)} className="w-32">
+          <Select value={currency} onChange={(e) => setCurrency(e.target.value)} className="w-36">
+            <option value="">{suggestedCurrency ? 'Currency' : 'Select currency'}</option>
             <option value="NGN">₦ NGN</option>
             <option value="USD">$ USD</option>
             <option value="EUR">€ EUR</option>
             <option value="GBP">£ GBP</option>
+            <option value="CAD">$ CAD</option>
+            <option value="AUD">$ AUD</option>
+            <option value="KES">KSh KES</option>
+            <option value="GHS">GH₵ GHS</option>
+            <option value="ZAR">R ZAR</option>
+            <option value="INR">₹ INR</option>
           </Select>
-          <Button onClick={handleCreate} disabled={!newName.trim()} className="flex-1">
+          <Button onClick={() => void handleCreate()} disabled={!newName.trim() || !currency} className="flex-1">
             Create account
           </Button>
         </div>
+        {!suggestedCurrency && (
+          <p className="text-xs text-[var(--color-muted-foreground)]">
+            Could not detect currency from this file. Pick the one on the statement.
+          </p>
+        )}
         {accounts.length > 0 && (
           <button
             type="button"

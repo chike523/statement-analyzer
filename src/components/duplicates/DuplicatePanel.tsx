@@ -11,9 +11,10 @@ import { useEffect, useState } from 'react'
 import type { Transaction } from '@/types/transaction'
 
 export function DuplicatePanel({ embedded = false }: { embedded?: boolean }) {
-  const { duplicateGroups, resolveDuplicate, transactionCount } = useApp()
+  const { duplicateGroups, resolveDuplicate, transactionCount, accounts } = useApp()
   const [txMap, setTxMap] = useState<Record<string, Transaction>>({})
   const pending = countPendingDuplicates(duplicateGroups)
+  const accountCurrency = Object.fromEntries(accounts.map((a) => [a.id, a.currency]))
 
   useEffect(() => {
     if (transactionCount === 0) return
@@ -89,7 +90,7 @@ export function DuplicatePanel({ embedded = false }: { embedded?: boolean }) {
                     <span>{tx.description}</span>
                   </div>
                   <span className={tx.amount < 0 ? 'text-[var(--color-destructive)]' : 'text-green-600'}>
-                    {formatCurrency(tx.amount)}
+                    {formatCurrency(tx.amount, tx.currency ?? accountCurrency[tx.account_id])}
                   </span>
                 </div>
               )

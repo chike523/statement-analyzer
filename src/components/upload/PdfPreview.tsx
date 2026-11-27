@@ -6,9 +6,10 @@ type PdfPreviewProps = {
   meta: { page_count: number; has_text_layer: boolean; raw_text_preview: string }
   /** When set (e.g. OFX/QFX), shows this label instead of PDF page/text-layer badges. */
   sourceLabel?: string
+  currency?: string | null
 }
 
-export function PdfPreview({ rows, meta, sourceLabel }: PdfPreviewProps) {
+export function PdfPreview({ rows, meta, sourceLabel, currency }: PdfPreviewProps) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
@@ -52,7 +53,7 @@ export function PdfPreview({ rows, meta, sourceLabel }: PdfPreviewProps) {
                       row.amount < 0 ? 'text-[var(--color-destructive)]' : 'text-green-600'
                     }`}
                   >
-                    {formatCurrency(row.amount)}
+                    {formatCurrency(row.amount, currency)}
                   </td>
                 </tr>
               ))}

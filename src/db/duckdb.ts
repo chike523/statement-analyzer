@@ -133,7 +133,7 @@ async function getConnection(): Promise<DuckDbWasm.AsyncDuckDBConnection> {
     CREATE TABLE IF NOT EXISTS accounts (
       id VARCHAR PRIMARY KEY,
       name VARCHAR NOT NULL,
-      currency VARCHAR DEFAULT 'USD'
+      currency VARCHAR NOT NULL
     );
 
     CREATE TABLE IF NOT EXISTS transactions (

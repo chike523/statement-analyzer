@@ -34,7 +34,7 @@ export async function convertCsvToTransactions(
   mapping: ColumnMapping,
   accountId: string,
   batchId: string,
-  currency = 'USD',
+  currency: string,
 ): Promise<{ transactions: Transaction[]; skipped: number; errors: string[] }> {
   return new Promise((resolve, reject) => {
     const worker = getCsvWorker()
