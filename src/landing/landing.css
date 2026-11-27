@@ -609,6 +609,12 @@
     }
     .sa-landing #nav .nav-logo {
       min-height: 62px;
+      /* Keep wordmark left of the notch diagonal so it does not clip. */
+      padding-right: calc(var(--m-notch-run) + 14px);
+    }
+    .sa-landing #nav .nav-word {
+      font-size: 16px;
+      font-stretch: 115%;
     }
   }
   .sa-landing #nav .menu {

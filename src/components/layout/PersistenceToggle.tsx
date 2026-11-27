@@ -9,7 +9,7 @@ export function PersistenceToggle() {
 
   return (
     <div
-      className="flex items-center gap-2 text-sm text-[var(--color-muted-foreground)]"
+      className="flex shrink-0 items-center gap-1.5 text-sm text-[var(--color-muted-foreground)] sm:gap-2"
       title={
         persistenceEnabled
           ? 'Your data is saved in this browser and will still be here after a refresh. It never leaves your device.'
@@ -17,12 +17,16 @@ export function PersistenceToggle() {
       }
     >
       {persistenceBusy ? (
-        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
       ) : (
-        <HardDrive className="h-3.5 w-3.5" />
+        <HardDrive className="h-3.5 w-3.5" aria-hidden />
       )}
-      <label htmlFor="persist-toggle" className="hidden cursor-pointer sm:inline">
-        Save on device
+      <label
+        htmlFor="persist-toggle"
+        className="cursor-pointer text-xs font-medium tracking-[0.04em] uppercase sm:text-sm sm:font-normal sm:normal-case sm:tracking-normal"
+      >
+        <span className="sm:hidden">Save</span>
+        <span className="hidden sm:inline">Save on device</span>
       </label>
       <Switch
         id="persist-toggle"

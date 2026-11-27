@@ -101,12 +101,12 @@ function AppContent() {
     { id: 'transactions', label: 'Activity' },
     {
       id: 'review',
-      label: pendingDupes > 0 ? `Review (${pendingDupes})` : 'Review',
+      label: pendingDupes > 0 ? `Review · ${pendingDupes}` : 'Review',
     },
     {
       id: 'recurring',
       label:
-        recurringPatterns.length > 0 ? `Bills (${recurringPatterns.length})` : 'Bills',
+        recurringPatterns.length > 0 ? `Bills · ${recurringPatterns.length}` : 'Bills',
     },
   ]
 
@@ -134,31 +134,42 @@ function AppContent() {
     <div className="min-h-screen bg-[var(--color-background)] pb-[env(safe-area-inset-bottom)] text-[var(--color-card-foreground)]">
       <div className="px-3 pt-3 sm:px-3">
         <header className="sticky top-3 z-40 rounded-[var(--radius-lg)] bg-[var(--color-card)]">
-          <div className="mx-auto flex max-w-7xl items-start justify-between gap-3 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:items-center sm:gap-4 sm:px-6 sm:py-4">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2.5">
-                <span
-                  className="inline-block h-[14px] w-[14px] shrink-0 rounded-full"
-                  style={{
-                    background: 'linear-gradient(135deg, var(--color-lilac) 58%, var(--color-lime) 58%)',
-                  }}
-                  aria-hidden
-                />
-                <span className="font-[family-name:var(--font-display)] text-base font-semibold tracking-[0.01em] uppercase sm:text-lg">
-                  Analyzer
-                </span>
+          <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6 sm:py-4">
+            <div className="flex min-w-0 items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2.5">
+                  <span
+                    className="inline-block h-[14px] w-[14px] shrink-0 rounded-full"
+                    style={{
+                      background:
+                        'linear-gradient(135deg, var(--color-lilac) 58%, var(--color-lime) 58%)',
+                    }}
+                    aria-hidden
+                  />
+                  <span className="font-[family-name:var(--font-display)] text-base font-semibold tracking-[0.01em] uppercase sm:text-lg">
+                    Analyzer
+                  </span>
+                </div>
+                <p className="mt-1 truncate text-xs tracking-[0.04em] text-[var(--color-caption)] uppercase sm:text-[11px]">
+                  {hasData
+                    ? `${accounts.length} acct${accounts.length !== 1 ? 's' : ''} · ${transactionCount.toLocaleString()} txns`
+                    : 'Import a statement to get started'}
+                </p>
               </div>
-              <p className="mt-1 truncate text-xs tracking-[0.04em] text-[var(--color-caption)] uppercase sm:text-[11px]">
-                {hasData
-                  ? `${accounts.length} account${accounts.length !== 1 ? 's' : ''} · ${transactionCount.toLocaleString()} transactions`
-                  : 'Import a statement to get started'}
-              </p>
-            </div>
-            <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
               <button
                 type="button"
                 onClick={backToLanding}
-                className="min-h-9 px-2 text-xs font-medium tracking-[0.06em] text-[var(--color-caption)] uppercase hover:text-[var(--color-foreground)]"
+                className="shrink-0 text-xs font-medium tracking-[0.06em] text-[var(--color-caption)] uppercase hover:text-[var(--color-foreground)] sm:hidden"
+              >
+                Home
+              </button>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 sm:justify-end sm:gap-3">
+              <button
+                type="button"
+                onClick={backToLanding}
+                className="hidden min-h-9 px-2 text-xs font-medium tracking-[0.06em] text-[var(--color-caption)] uppercase hover:text-[var(--color-foreground)] sm:inline"
               >
                 Home
               </button>
@@ -174,8 +185,8 @@ function AppContent() {
                     className="min-h-9"
                     onClick={() => setActiveTab('upload')}
                   >
-                    <Upload className="h-3.5 w-3.5 sm:mr-1" />
-                    <span className="hidden sm:inline">Import</span>
+                    <Upload className="mr-1 h-3.5 w-3.5" />
+                    Import
                   </Button>
                 </>
               )}
