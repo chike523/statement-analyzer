@@ -1,10 +1,12 @@
-# Buidace Statement Analyzer
+# Statement Analyzer
 
 **Understand your bank statements right in your browser, with nothing ever leaving your device.**
 
 Upload a CSV or PDF bank statement and instantly see your income, spending, recurring bills, and duplicate charges. Then export a clean summary you can hand to a financial advisor or paste into an AI assistant.
 
-**Live app:** [chike523.github.io/Buidace-Statement-Analyzer](https://chike523.github.io/Buidace-Statement-Analyzer/)
+**Live app:** [chike523.github.io/statement-analyzer](https://chike523.github.io/statement-analyzer/)
+
+**Built by:** [David Chikezie](https://davidchikezie.com)
 
 > [!NOTE]
 > **100% private.** Your statements are read and analyzed entirely inside your browser tab. No file, no transaction, and no number is ever sent to a server. There is no backend.
@@ -22,16 +24,19 @@ Reading a bank statement line by line is slow and easy to get wrong. This tool d
 - **Catches double charges:** flags transactions that look like duplicates so your totals stay honest.
 - **Notices money moving between your own accounts** so a transfer isn't mistaken for real income or spending.
 - **Handles several accounts at once:** import statements from different banks or wallets and see them together.
-- **Gives you a shareable summary:** one click downloads a tidy report (or copies it) for an advisor or AI to review.
+- **Gives you a shareable summary:** download a Markdown report, or **Copy for AI** as clean plain text for pasting into an assistant.
 
 ### How to use it
 
-1. **Import:** drag a CSV or PDF onto the welcome screen.
-2. **Check the columns:** for CSVs, the app guesses which column is the date, description, and amount; you confirm or fix it. Pick or create an account for the statement.
-3. **Overview:** see your income, expenses, net flow, and monthly trend. Toggle options to hide internal transfers or group payees together.
-4. **Transactions:** search, filter by date/amount/type, and scroll every line.
-5. **Review:** resolve anything flagged as a duplicate and check detected transfers between your accounts.
-6. **Export report:** the header button saves `financial-summary-YYYY-MM-DD.md` or copies it to your clipboard.
+1. **Start from the homepage:** open the live app, then choose **Analyze my statement** (or **Back to analyzer** if you already have data loaded).
+2. **Import:** drag a CSV, Excel, PDF, or OFX/QFX file onto the welcome screen.
+3. **Check the columns:** for CSVs and Excel, the app guesses which column is the date, description, and amount; you confirm or fix it. Pick or create an account for the statement.
+4. **Overview:** see income, expenses, net flow, and monthly trend. Use the **Next** tips for review, bills, activity, or export. Toggle options to hide internal transfers or group payees.
+5. **Activity:** search, filter by date/amount/type, and scroll every line.
+6. **Review:** resolve anything flagged as a duplicate and check detected transfers between your accounts.
+7. **Bills:** inspect recurring payments the app detected.
+8. **Export:** **Export report** downloads `financial-summary-YYYY-MM-DD.md`. **Copy for AI** copies a plain-text version (no Markdown hashes or tables) for chat paste.
+9. **Home:** use **Home** in the app header anytime to return to the marketing page without losing your current session.
 
 ### Supported formats
 
@@ -47,7 +52,7 @@ Reading a bank statement line by line is slow and easy to get wrong. This tool d
 
 Everything happens locally. The app has no server that receives your data. By default the data lives only in the current browser tab. Close the tab and it's gone. The report you export is generated on your machine; nothing is uploaded when you create or download it.
 
-If you'd rather not re-import every visit, flip the **"Save on device"** switch in the top-right. Your statements are then saved **in your own browser** (never sent anywhere) and reloaded automatically next time. Turn it off and the saved copy is deleted immediately.
+If you'd rather not re-import every visit, flip the **"Save"** / **"Save on device"** switch in the header. Your statements are then saved **in your own browser** (never sent anywhere) and reloaded automatically next time. Turn it off and the saved copy is deleted immediately.
 
 ---
 
@@ -85,8 +90,8 @@ flowchart TD
     E --> F
     F --> G[(DuckDB-WASM<br/>in-browser SQL, Web Worker)]
     G --> H[Analysis layer<br/>duplicates · recurring · transfers · merchants]
-    H --> I[React UI<br/>Overview · Transactions · Review · Recurring]
-    G --> J[Markdown report generator]
+    H --> I[React UI<br/>Overview · Activity · Review · Bills]
+    G --> J[Report generator<br/>Markdown download · plain-text Copy for AI]
     I --> J
 ```
 
@@ -124,13 +129,19 @@ The analytical logic lives in pure, testable functions under `src/lib/`:
 
 ### Report generation
 
-`src/lib/report.ts` assembles a structured Markdown report — executive summary, per-account and monthly breakdowns, top payees/sources, recurring charges, transfers, largest transactions, data-quality notes, and prompts for an advisor or AI — all built from the same DuckDB queries and analysis functions used by the UI, then downloaded client-side.
+`src/lib/report.ts` builds the same underlying summary for two outputs:
+
+- **Export report:** Markdown file download (`financial-summary-YYYY-MM-DD.md`)
+- **Copy for AI:** plain-text clipboard copy without Markdown headings, bold markers, or pipe tables, so it pastes cleanly into chat tools
+
+Both include executive summary, per-account and monthly breakdowns, top payees/sources, recurring charges, transfers, largest transactions, data-quality notes, and prompts for an advisor or AI. Everything is generated client-side from the same DuckDB queries and analysis functions used by the UI.
 
 ### Project structure
 
 ```
 src/
 ├── App.tsx                 # Shell, tabs, top-level layout
+├── landing/                # Marketing homepage
 ├── context/AppContext.tsx  # Central state + import/analyze orchestration
 ├── db/
 │   ├── duckdb.ts           # DuckDB-WASM setup, schema, all SQL queries
@@ -145,7 +156,7 @@ src/
 │   ├── recurring.ts        # recurring-payment detection
 │   ├── transfers.ts        # internal-transfer matching
 │   ├── merchant.ts         # merchant grouping rules
-│   └── report.ts           # Markdown report builder
+│   └── report.ts           # Markdown + plain-text report builders
 ├── components/             # dashboard, table, upload, review, recurring, ui...
 └── types/transaction.ts    # Shared domain types
 ```
@@ -155,8 +166,8 @@ src/
 ## Running locally
 
 ```bash
-git clone https://github.com/chike523/Buidace-Statement-Analyzer.git
-cd Buidace-Statement-Analyzer
+git clone https://github.com/chike523/statement-analyzer.git
+cd statement-analyzer
 npm install
 npm run dev
 ```
