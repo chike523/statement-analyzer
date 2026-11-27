@@ -13,22 +13,41 @@ export type PdfParseOutput = {
 }
 
 function toParsedRows(
-  rows: { date: string; description: string; amount: number }[],
+  rows: {
+    date: string
+    description: string
+    amount: number
+    balance?: number
+    reference?: string
+  }[],
   filename: string,
   tag: string,
 ): ParsedRow[] {
   return rows.map((r, i) => ({
-    ...r,
-    raw_source: `${filename}:${tag} ${i + 1}`,
+    date: r.date,
+    description: r.description,
+    amount: r.amount,
+    balance: r.balance,
+    raw_source: r.reference
+      ? `${filename}:${tag}:${r.reference}`
+      : `${filename}:${tag} ${i + 1}`,
   }))
 }
 
-/** Prefer unique date+amount+description so page-overlap carry doesn't double-count. */
+/**
+ * Drop page-break duplicates. Prefer bank reference when present so same-day
+ * identical amounts (e.g. repeated -50 levies) stay distinct.
+ */
 function dedupeRows(rows: ParsedRow[]): ParsedRow[] {
   const seen = new Set<string>()
   const out: ParsedRow[] = []
   for (const row of rows) {
-    const key = `${row.date}|${row.amount}|${row.description}`
+    const ref = row.raw_source.includes(':')
+      ? row.raw_source.slice(row.raw_source.lastIndexOf(':') + 1)
+      : ''
+    const key = /^(?![A-Za-z]+$)[A-Za-z0-9]{10,}$/.test(ref)
+      ? `ref:${ref}`
+      : `${row.date}|${row.amount}|${row.balance ?? ''}|${row.description}`
     if (seen.has(key)) continue
     seen.add(key)
     out.push(row)
@@ -52,7 +71,8 @@ export async function parsePdfBuffer(
     const rows: ParsedRow[] = []
     let totalTextLength = 0
     let preview = ''
-    // Short carry so a transaction split across a page break can still match.
+    // Carry enough text that a wrapped OPay row (description + value date + amount)
+    // split across a page break can still match.
     let carry = ''
 
     for (let pageNum = 1; pageNum <= pageCount; pageNum++) {
@@ -70,7 +90,7 @@ export async function parsePdfBuffer(
       const chunk = `${carry}\n${pageText}`
       const parsed = parseGenericText(chunk)
       rows.push(...toParsedRows(parsed, filename, `p${pageNum}`))
-      carry = pageText.slice(-400)
+      carry = pageText.slice(-800)
 
       await yieldToMain()
     }
@@ -171,7 +191,7 @@ export async function runOcrOnPdf(
         const chunk = `${carry}\n${pageText}`
         const parsed = parseGenericText(chunk)
         rows.push(...toParsedRows(parsed, filename, `ocr-p${pageIndex + 1}`))
-        carry = pageText.slice(-400)
+        carry = pageText.slice(-800)
 
         await yieldToMain(pauseMs)
       },
