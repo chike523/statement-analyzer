@@ -39,9 +39,13 @@ function PanelFallback() {
   )
 }
 
+const ENTERED_APP_KEY = 'sa-entered-app'
+const PREFER_LANDING_KEY = 'sa-prefer-landing'
+
 function readWantsApp(): boolean {
   if (typeof window === 'undefined') return false
-  return window.location.hash === '#app' || sessionStorage.getItem('sa-entered-app') === '1'
+  if (sessionStorage.getItem(PREFER_LANDING_KEY) === '1') return false
+  return window.location.hash === '#app' || sessionStorage.getItem(ENTERED_APP_KEY) === '1'
 }
 
 function AppContent() {
@@ -67,25 +71,28 @@ function AppContent() {
     return () => clearTimeout(timer)
   }, [importSummary, dismissImportSummary])
 
+  // Auto-enter the tool when saved data loads, unless the user chose Home.
   useEffect(() => {
-    if (hasData && !inApp) {
-      setInApp(true)
-      sessionStorage.setItem('sa-entered-app', '1')
-      if (window.location.hash !== '#app') {
-        window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}#app`)
-      }
+    if (!hasData || inApp) return
+    if (sessionStorage.getItem(PREFER_LANDING_KEY) === '1') return
+    setInApp(true)
+    sessionStorage.setItem(ENTERED_APP_KEY, '1')
+    if (window.location.hash !== '#app') {
+      window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}#app`)
     }
   }, [hasData, inApp])
 
   const enterApp = () => {
     setInApp(true)
-    sessionStorage.setItem('sa-entered-app', '1')
+    sessionStorage.setItem(ENTERED_APP_KEY, '1')
+    sessionStorage.removeItem(PREFER_LANDING_KEY)
     window.location.hash = 'app'
   }
 
   const backToLanding = () => {
     setInApp(false)
-    sessionStorage.removeItem('sa-entered-app')
+    sessionStorage.removeItem(ENTERED_APP_KEY)
+    sessionStorage.setItem(PREFER_LANDING_KEY, '1')
     window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`)
   }
 
@@ -114,8 +121,13 @@ function AppContent() {
     )
   }
 
-  if (!inApp && !hasData) {
-    return <LandingPage onStart={enterApp} />
+  if (!inApp) {
+    return (
+      <LandingPage
+        onStart={enterApp}
+        startLabel={hasData ? 'Back to analyzer' : undefined}
+      />
+    )
   }
 
   return (
@@ -132,14 +144,9 @@ function AppContent() {
                   }}
                   aria-hidden
                 />
-                <button
-                  type="button"
-                  onClick={backToLanding}
-                  className="font-[family-name:var(--font-display)] text-left text-base font-semibold tracking-[0.01em] uppercase sm:text-lg"
-                  title="Back to homepage"
-                >
+                <span className="font-[family-name:var(--font-display)] text-base font-semibold tracking-[0.01em] uppercase sm:text-lg">
                   Analyzer
-                </button>
+                </span>
               </div>
               <p className="mt-1 truncate text-xs tracking-[0.04em] text-[var(--color-caption)] uppercase sm:text-[11px]">
                 {hasData
@@ -148,6 +155,13 @@ function AppContent() {
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
+              <button
+                type="button"
+                onClick={backToLanding}
+                className="min-h-9 px-2 text-xs font-medium tracking-[0.06em] text-[var(--color-caption)] uppercase hover:text-[var(--color-foreground)]"
+              >
+                Home
+              </button>
               <PersistenceToggle />
               {hasData && (
                 <>

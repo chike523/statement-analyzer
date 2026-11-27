@@ -3,6 +3,8 @@ import './landing.css'
 
 type LandingPageProps = {
   onStart: () => void
+  /** Primary CTA when returning from the tool with a session still loaded. */
+  startLabel?: string
 }
 
 const DAYS = [
@@ -87,7 +89,9 @@ const FAQS = [
   },
 ] as const
 
-export function LandingPage({ onStart }: LandingPageProps) {
+export function LandingPage({ onStart, startLabel }: LandingPageProps) {
+  const primaryLabel = startLabel ?? 'Analyze my statement'
+  const navLabel = startLabel ?? 'Open app'
   const rootRef = useRef<HTMLDivElement>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [navHidden, setNavHidden] = useState(false)
@@ -193,7 +197,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
           <a href="#faq">FAQ</a>
         </nav>
         <button type="button" className="m-btn nav-cta" onClick={start}>
-          <span className="m-btn__label">Open app</span>
+          <span className="m-btn__label">{navLabel}</span>
         </button>
         <button
           type="button"
@@ -235,7 +239,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
             </a>
           </nav>
           <button type="button" className="m-btn-2" onClick={start}>
-            <span className="m-btn__label">Analyze my statement</span>
+            <span className="m-btn__label">{primaryLabel}</span>
           </button>
         </div>
       </header>
@@ -272,7 +276,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
                 </li>
               </ul>
               <button type="button" className="m-btn" onClick={start}>
-                <span className="m-btn__label">Analyze my statement</span>
+                <span className="m-btn__label">{primaryLabel}</span>
               </button>
             </div>
             <figure className="cv-chart" aria-label="Illustrative weekly cash movement">
@@ -563,7 +567,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
               </p>
               <div className="ct-actions">
                 <button type="button" className="m-btn" onClick={start}>
-                  <span className="m-btn__label">Analyze my statement</span>
+                  <span className="m-btn__label">{primaryLabel}</span>
                 </button>
               </div>
             </div>
@@ -576,7 +580,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
           </div>
           <div className="m-notch-2 ct-tab">
             <button type="button" className="m-btn-3" onClick={start}>
-              <span className="m-btn__label">Open importer</span>
+              <span className="m-btn__label">{startLabel ?? 'Open importer'}</span>
               <svg className="m-btn-3__icon" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M7 17L17 7M9 7h8v8" />
               </svg>
@@ -596,9 +600,15 @@ export function LandingPage({ onStart }: LandingPageProps) {
             <a href="#capabilities">Formats</a>
             <a href="#faq">FAQ</a>
             <button type="button" className="m-link" onClick={start}>
-              <span className="m-link__label">Open app</span>
+              <span className="m-link__label">{navLabel}</span>
             </button>
           </nav>
+          <p className="m-text-4 ft-credit">
+            Built by{' '}
+            <a href="https://davidchikezie.com" target="_blank" rel="noreferrer">
+              David Chikezie
+            </a>
+          </p>
           <p className="m-text-4 ft-credit">
             Design language adapted from{' '}
             <a href="https://8b.com/templates/kurvo/" target="_blank" rel="noreferrer">
