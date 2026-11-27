@@ -8,13 +8,13 @@ type LandingPageProps = {
 }
 
 const DAYS = [
-  { day: 'Mon', name: 'Groceries', amount: '£62', h: 0.48, cls: '' },
-  { day: 'Tue', name: 'Salary in', amount: '£2.1k', h: 1, cls: 'is-easy' },
-  { day: 'Wed', name: 'Rent', amount: '£980', h: 0.72, cls: '' },
-  { day: 'Thu', name: 'Transit', amount: '£18', h: 0.22, cls: 'is-easy' },
-  { day: 'Fri', name: 'Quiet day', amount: '£0', h: 0.06, cls: 'is-rest' },
-  { day: 'Sat', name: 'Dining', amount: '£74', h: 0.55, cls: '' },
-  { day: 'Sun', name: 'Bills', amount: '£41', h: 0.38, cls: 'is-today' },
+  { day: 'Mon', name: 'Groceries', amount: '$62', h: 0.48, cls: '' },
+  { day: 'Tue', name: 'Salary in', amount: '$2.1k', h: 1, cls: 'is-easy' },
+  { day: 'Wed', name: 'Rent', amount: '$980', h: 0.72, cls: '' },
+  { day: 'Thu', name: 'Transit', amount: '$18', h: 0.22, cls: 'is-easy' },
+  { day: 'Fri', name: 'Quiet day', amount: '$0', h: 0.06, cls: 'is-rest' },
+  { day: 'Sat', name: 'Dining', amount: '$74', h: 0.55, cls: '' },
+  { day: 'Sun', name: 'Bills', amount: '$41', h: 0.38, cls: 'is-today' },
 ] as const
 
 const CAPABILITIES = [
@@ -59,7 +59,7 @@ const STORIES = [
     meta: 'Illustrative scenario · recurring bills',
   },
   {
-    result: '£0 upload',
+    result: '$0 upload',
     quote: 'Needed a clean summary for my advisor without emailing raw statements.',
     meta: 'Illustrative scenario · export report',
   },
@@ -401,16 +401,16 @@ export function LandingPage({ onStart, startLabel }: LandingPageProps) {
                     </header>
                     <div className="ap-card ap-card--dark">
                       <span className="m-text-4">Net this month</span>
-                      <strong className="m-text-3">+£1,284</strong>
+                      <strong className="m-text-3">+$1,284</strong>
                     </div>
                     <ul className="ap-metrics">
                       <li>
                         <span className="m-text-4">In</span>
-                        <strong>£4,920</strong>
+                        <strong>$4,920</strong>
                       </li>
                       <li>
                         <span className="m-text-4">Out</span>
-                        <strong>£3,636</strong>
+                        <strong>$3,636</strong>
                       </li>
                     </ul>
                     <div className="ap-card ap-card--mint">
@@ -426,19 +426,19 @@ export function LandingPage({ onStart, startLabel }: LandingPageProps) {
                     <ul className="ap-steps">
                       <li>
                         <span>Streaming+</span>
-                        <b>£12.99</b>
+                        <b>$12.99</b>
                       </li>
                       <li>
                         <span>Gym</span>
-                        <b>£39.00</b>
+                        <b>$39.00</b>
                       </li>
                       <li>
                         <span>Phone</span>
-                        <b>£28.00</b>
+                        <b>$28.00</b>
                       </li>
                       <li>
                         <span>Cloud drive</span>
-                        <b>£9.99</b>
+                        <b>$9.99</b>
                       </li>
                     </ul>
                     <div className="ap-card">
