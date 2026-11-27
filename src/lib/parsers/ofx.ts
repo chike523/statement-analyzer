@@ -55,7 +55,7 @@ export function parseOfxText(text: string, filename: string): OfxParseOutput {
     const payee = tag(block, 'PAYEE')
     const description = [name || payee, memo]
       .filter(Boolean)
-      .join(' — ')
+      .join(' · ')
       .trim()
 
     index += 1

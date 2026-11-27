@@ -1,5 +1,14 @@
 import { useCallback, useRef, useState } from 'react'
-import { Upload, FileSpreadsheet, FileText, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react'
+import {
+  Upload,
+  FileSpreadsheet,
+  FileText,
+  Loader2,
+  AlertCircle,
+  CheckCircle2,
+  Trash2,
+  RotateCcw,
+} from 'lucide-react'
 import { useApp } from '@/context/AppContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -98,7 +107,7 @@ export function UploadZone({ compact = false }: UploadZoneProps) {
             updatePendingImport(id, {
               status: 'parsing',
               parseProgress: 0,
-              error: 'Running OCR — large scanned PDFs can take several minutes…',
+              error: 'Running OCR. Large scanned PDFs can take several minutes…',
             })
             output = await runOcrOnPdf(
               file,
@@ -196,21 +205,31 @@ export function UploadZone({ compact = false }: UploadZoneProps) {
         </CardContent>
       </Card>
 
-      {activeImports.map((imp) => (
-        <ImportCard
-          key={imp.id}
-          imp={imp}
-          hasAccounts={accounts.length > 0}
-          onRemove={() => removePendingImport(imp.id)}
-          onImportCsv={async (accountId, mapping) => {
-            const content = imp.csvContent ?? (await readFileAsText(imp.file))
-            await importCsv(imp.id, accountId, mapping, content)
-          }}
-          onImportPdf={async (accountId, rows) => {
-            await importPdf(imp.id, accountId, rows)
-          }}
-        />
-      ))}
+      {activeImports.length > 0 && (
+        <ul className="space-y-3" aria-label="Files being imported">
+          {activeImports.map((imp) => (
+            <li key={imp.id}>
+              <ImportCard
+                imp={imp}
+                hasAccounts={accounts.length > 0}
+                onRemove={() => removePendingImport(imp.id)}
+                onRetry={() => {
+                  const file = imp.file
+                  removePendingImport(imp.id)
+                  void processFile(file)
+                }}
+                onImportCsv={async (accountId, mapping) => {
+                  const content = imp.csvContent ?? (await readFileAsText(imp.file))
+                  await importCsv(imp.id, accountId, mapping, content)
+                }}
+                onImportPdf={async (accountId, rows) => {
+                  await importPdf(imp.id, accountId, rows)
+                }}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }
@@ -230,6 +249,7 @@ type ImportCardProps = {
   }
   hasAccounts: boolean
   onRemove: () => void
+  onRetry: () => void
   onImportCsv: (accountId: string, mapping: ColumnMapping) => Promise<void>
   onImportPdf: (
     accountId: string,
@@ -237,7 +257,39 @@ type ImportCardProps = {
   ) => Promise<void>
 }
 
-function ImportCard({ imp, hasAccounts, onRemove, onImportCsv, onImportPdf }: ImportCardProps) {
+function statusLabel(
+  status: string,
+  rowCount: number,
+  parseProgress?: number,
+  statusDetail?: string,
+): { text: string; tone: 'muted' | 'ok' | 'error' | 'busy' } {
+  if (status === 'ready') {
+    return { text: `${rowCount.toLocaleString()} transactions ready`, tone: 'ok' }
+  }
+  if (status === 'error') {
+    return { text: 'Failed', tone: 'error' }
+  }
+  if (status === 'importing') {
+    return { text: 'Importing…', tone: 'busy' }
+  }
+  if (status === 'parsing') {
+    const pct = typeof parseProgress === 'number' ? ` · ${parseProgress}%` : ''
+    return {
+      text: statusDetail && !statusDetail.includes('…') ? statusDetail : `Reading file${pct}`,
+      tone: 'busy',
+    }
+  }
+  return { text: status, tone: 'muted' }
+}
+
+function ImportCard({
+  imp,
+  hasAccounts,
+  onRemove,
+  onRetry,
+  onImportCsv,
+  onImportPdf,
+}: ImportCardProps) {
   const [accountId, setAccountId] = useState('')
   const [mapping, setMapping] = useState<ColumnMapping | null>(null)
   const [importing, setImporting] = useState(false)
@@ -269,60 +321,85 @@ function ImportCard({ imp, hasAccounts, onRemove, onImportCsv, onImportPdf }: Im
     }
   }
 
+  const label = statusLabel(imp.status, rowCount, imp.parseProgress, imp.error)
+  const showProgress = imp.status === 'parsing' || imp.status === 'importing'
+  const progressValue =
+    imp.status === 'importing' ? 70 : Math.max(8, imp.parseProgress ?? 12)
+
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="border-b border-[var(--color-border)] bg-[var(--color-muted)]/30 pb-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3">
-            {isCsvLike ? (
-              <FileSpreadsheet className="mt-0.5 h-5 w-5 shrink-0 text-green-600" />
-            ) : (
-              <FileText
+    <Card
+      className={cn(
+        'overflow-hidden',
+        imp.status === 'error' && 'border-[1.5px] border-[var(--color-destructive)]',
+      )}
+    >
+      <CardHeader className="pb-3">
+        <div className="flex items-start gap-3">
+          {isCsvLike ? (
+            <FileSpreadsheet className="mt-0.5 h-10 w-10 shrink-0 text-[var(--color-muted-foreground)]" />
+          ) : (
+            <FileText className="mt-0.5 h-10 w-10 shrink-0 text-[var(--color-muted-foreground)]" />
+          )}
+          <div className="min-w-0 flex-1">
+            <CardTitle className="truncate text-sm font-medium">{imp.file.name}</CardTitle>
+            <CardDescription className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+              <span className="text-[var(--color-muted-foreground)]">
+                {formatBytes(imp.file.size)}
+              </span>
+              <span className="text-[var(--color-mist)]" aria-hidden>
+                ·
+              </span>
+              <span
                 className={cn(
-                  'mt-0.5 h-5 w-5 shrink-0',
-                  imp.fileType === 'ofx' ? 'text-blue-600' : 'text-red-600',
+                  'inline-flex items-center gap-1 font-medium',
+                  label.tone === 'ok' && 'text-green-700',
+                  label.tone === 'error' && 'text-[var(--color-destructive)]',
+                  label.tone === 'busy' && 'text-[var(--color-muted-foreground)]',
                 )}
-              />
+              >
+                {label.tone === 'ok' && <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />}
+                {label.tone === 'error' && <AlertCircle className="h-3.5 w-3.5" aria-hidden />}
+                {label.tone === 'busy' && <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />}
+                {label.text}
+              </span>
+            </CardDescription>
+
+            {showProgress && (
+              <div className="mt-3">
+                <Progress value={progressValue} />
+                {imp.status === 'parsing' && imp.error?.includes('…') && (
+                  <p className="mt-1.5 text-xs text-[var(--color-muted-foreground)]">{imp.error}</p>
+                )}
+              </div>
             )}
-            <div>
-              <CardTitle className="text-base">{imp.file.name}</CardTitle>
-              <CardDescription>
-                {imp.status === 'ready' && (
-                  <span className="inline-flex items-center gap-1 text-green-700">
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                    {rowCount.toLocaleString()} transactions ready
-                  </span>
-                )}
-                {imp.status === 'parsing' && 'Analyzing…'}
-                {imp.status === 'error' && 'Could not parse file'}
-                {imp.status === 'importing' && 'Saving to database…'}
-              </CardDescription>
-            </div>
+
+            {imp.status === 'error' && (
+              <div className="mt-3 space-y-2">
+                <p className="text-sm text-[var(--color-destructive)]">
+                  {imp.error ?? 'Could not read this file.'}
+                </p>
+                <Button type="button" variant="outline" size="sm" onClick={onRetry}>
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  Try again
+                </Button>
+              </div>
+            )}
           </div>
-          <Button variant="ghost" size="sm" onClick={onRemove}>
-            Remove
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 shrink-0"
+            onClick={onRemove}
+            aria-label={`Remove ${imp.file.name}`}
+          >
+            <Trash2 className="h-4 w-4" />
           </Button>
         </div>
       </CardHeader>
 
-      {imp.status === 'parsing' && (
-        <CardContent className="pt-5">
-          <Progress value={imp.parseProgress ?? 15} className="mb-2" />
-          <p className="text-sm text-[var(--color-muted-foreground)]">
-            {imp.error ?? 'Analyzing file…'}
-          </p>
-        </CardContent>
-      )}
-
-      {imp.status === 'error' && (
-        <CardContent className="flex items-center gap-2 pt-5 text-[var(--color-destructive)]">
-          <AlertCircle className="h-4 w-4 shrink-0" />
-          <span className="text-sm">{imp.error}</span>
-        </CardContent>
-      )}
-
       {imp.status === 'ready' && (
-        <CardContent className="space-y-5 pt-5">
+        <CardContent className="space-y-5 border-t border-[var(--color-border)] pt-5">
           {isRowsLike && imp.pdfRows && imp.pdfMeta && (
             <PdfPreview
               rows={imp.pdfRows}
@@ -348,7 +425,12 @@ function ImportCard({ imp, hasAccounts, onRemove, onImportCsv, onImportPdf }: Im
             preferCreate={!hasAccounts}
           />
 
-          <Button onClick={handleImport} disabled={importing || !canImport} className="w-full sm:w-auto" size="lg">
+          <Button
+            onClick={handleImport}
+            disabled={importing || !canImport}
+            className="w-full sm:w-auto"
+            size="lg"
+          >
             {importing ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -362,9 +444,10 @@ function ImportCard({ imp, hasAccounts, onRemove, onImportCsv, onImportPdf }: Im
       )}
 
       {imp.status === 'importing' && (
-        <CardContent className="flex items-center gap-2 pt-5 text-[var(--color-muted-foreground)]">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span className="text-sm">Importing {rowCount.toLocaleString()} transactions…</span>
+        <CardContent className="border-t border-[var(--color-border)] pt-4">
+          <p className="text-sm text-[var(--color-muted-foreground)]">
+            Saving {rowCount.toLocaleString()} transactions on this device…
+          </p>
         </CardContent>
       )}
     </Card>

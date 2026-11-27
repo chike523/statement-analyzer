@@ -1,29 +1,34 @@
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw, Upload } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { EmptyState } from '@/components/ui/empty-state'
 import { formatCurrency, formatDate } from '@/lib/utils'
 
 export function RecurringPanel() {
-  const { recurringPatterns, accounts, transactionCount } = useApp()
+  const { recurringPatterns, accounts, transactionCount, setActiveTab } = useApp()
 
   const accountMap = Object.fromEntries(accounts.map((a) => [a.id, a.name]))
 
   if (transactionCount === 0) {
     return (
-      <p className="text-sm text-[var(--color-muted-foreground)]">
-        Import transactions to detect recurring payments.
-      </p>
+      <EmptyState
+        icon={Upload}
+        title="No bills detected yet"
+        description="Import statements to spot subscriptions and regular payments."
+        action={{ label: 'Import a statement', onClick: () => setActiveTab('upload') }}
+      />
     )
   }
 
   if (recurringPatterns.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-2 py-8 text-[var(--color-muted-foreground)]">
-        <RefreshCw className="h-8 w-8" />
-        <p className="text-sm">No recurring patterns detected yet.</p>
-        <p className="text-xs">Need at least 3 similar debits at regular intervals.</p>
-      </div>
+      <EmptyState
+        icon={RefreshCw}
+        title="No recurring bills found"
+        description="Need at least three similar debits at regular intervals. Import another month if you can."
+        action={{ label: 'Import another statement', onClick: () => setActiveTab('upload') }}
+      />
     )
   }
 

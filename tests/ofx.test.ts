@@ -25,7 +25,7 @@ test('parseOfxText normalizes timezone-suffixed dates to YYYY-MM-DD', () => {
 
 test('parseOfxText combines NAME and MEMO, falls back to MEMO only', () => {
   const { rows } = parseOfxText(fixture, 'sample.ofx')
-  assert.equal(rows[0].description, 'SHOPRITE LEKKI — Card purchase')
+  assert.equal(rows[0].description, 'SHOPRITE LEKKI · Card purchase')
   assert.equal(rows[1].description, 'SALARY PAYMENT')
   assert.equal(rows[2].description, 'MTN Airtime Purchase')
 })

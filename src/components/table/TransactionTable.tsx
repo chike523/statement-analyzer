@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
+import { ListFilter } from 'lucide-react'
 import { useTransactions, useApp } from '@/context/AppContext'
 import { formatCurrency, formatDate, cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
+import { EmptyState } from '@/components/ui/empty-state'
 
 export function TransactionTable() {
   const { transactions, loading } = useTransactions()
-  const { accounts, filteredCount, transferIds } = useApp()
+  const { accounts, filteredCount, transferIds, transactionCount, setActiveTab, setFilters } =
+    useApp()
   const parentRef = useRef<HTMLDivElement>(null)
   const transferIdSet = new Set(transferIds)
   const [isMobile, setIsMobile] = useState(false)
@@ -38,11 +41,35 @@ export function TransactionTable() {
   }
 
   if (transactions.length === 0) {
+    if (transactionCount === 0) {
+      return (
+        <EmptyState
+          icon={ListFilter}
+          title="No activity yet"
+          description="Import a statement to browse every transaction here."
+          action={{ label: 'Import a statement', onClick: () => setActiveTab('upload') }}
+        />
+      )
+    }
     return (
-      <div className="flex h-64 flex-col items-center justify-center px-4 text-center text-[var(--color-muted-foreground)]">
-        <p>No transactions match your filters.</p>
-        <p className="text-sm">Upload a statement or adjust filters.</p>
-      </div>
+      <EmptyState
+        icon={ListFilter}
+        title="Nothing matches"
+        description="No transactions match your current filters."
+        action={{
+          label: 'Clear filters',
+          onClick: () =>
+            setFilters({
+              account_id: 'all',
+              date_from: '',
+              date_to: '',
+              amount_min: '',
+              amount_max: '',
+              type: 'all',
+              search: '',
+            }),
+        }}
+      />
     )
   }
 

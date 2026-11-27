@@ -14,8 +14,8 @@ export function WelcomeHero() {
           <br />
           statement
         </h2>
-        <p className="mt-4 max-w-[42ch] text-base text-[var(--color-muted-foreground)] sm:text-lg">
-          Import a CSV or PDF to explore spending, income, and recurring patterns.
+        <p className="mt-4 max-w-[40ch] text-base text-[var(--color-muted-foreground)] sm:text-lg">
+          See income, spending, and bills, without anything leaving this device.
         </p>
         <p className="mt-3 text-xs font-medium tracking-[0.06em] text-[var(--color-caption)] uppercase">
           Processed in your browser · Nothing is uploaded

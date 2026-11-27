@@ -1,6 +1,6 @@
 # Buidace Statement Analyzer
 
-**Understand your bank statements — right in your browser, with nothing ever leaving your device.**
+**Understand your bank statements right in your browser, with nothing ever leaving your device.**
 
 Upload a CSV or PDF bank statement and instantly see your income, spending, recurring bills, and duplicate charges. Then export a clean summary you can hand to a financial advisor or paste into an AI assistant.
 
@@ -15,23 +15,23 @@ Upload a CSV or PDF bank statement and instantly see your income, spending, recu
 
 Reading a bank statement line by line is slow and easy to get wrong. This tool does the tedious part for you:
 
-- **Reads your statement** — works with CSV, Excel (`.xlsx`/`.xls`), OFX/QFX, normal (digital) PDFs, and even scanned/photographed PDFs (it reads the text from the image automatically).
-- **Shows the big picture** — total money in, total money out, and what's left, with simple monthly charts.
-- **Finds who you pay the most** — your biggest expenses and income sources, grouped so the same shop or person isn't split into ten different lines.
-- **Spots recurring bills** — subscriptions and regular payments (weekly, monthly, or yearly) so nothing sneaks past you.
-- **Catches double charges** — flags transactions that look like duplicates so your totals stay honest.
-- **Notices money moving between your own accounts** — so a transfer isn't mistaken for real income or spending.
-- **Handles several accounts at once** — import statements from different banks or wallets and see them together.
-- **Gives you a shareable summary** — one click downloads a tidy report (or copies it) for an advisor or AI to review.
+- **Reads your statement:** works with CSV, Excel (`.xlsx`/`.xls`), OFX/QFX, normal (digital) PDFs, and even scanned/photographed PDFs (it reads the text from the image automatically).
+- **Shows the big picture:** total money in, total money out, and what's left, with simple monthly charts.
+- **Finds who you pay the most:** your biggest expenses and income sources, grouped so the same shop or person isn't split into ten different lines.
+- **Spots recurring bills:** subscriptions and regular payments (weekly, monthly, or yearly) so nothing sneaks past you.
+- **Catches double charges:** flags transactions that look like duplicates so your totals stay honest.
+- **Notices money moving between your own accounts** so a transfer isn't mistaken for real income or spending.
+- **Handles several accounts at once:** import statements from different banks or wallets and see them together.
+- **Gives you a shareable summary:** one click downloads a tidy report (or copies it) for an advisor or AI to review.
 
 ### How to use it
 
-1. **Import** — drag a CSV or PDF onto the welcome screen.
-2. **Check the columns** — for CSVs, the app guesses which column is the date, description, and amount; you confirm or fix it. Pick or create an account for the statement.
-3. **Overview** — see your income, expenses, net flow, and monthly trend. Toggle options to hide internal transfers or group payees together.
-4. **Transactions** — search, filter by date/amount/type, and scroll every line.
-5. **Review** — resolve anything flagged as a duplicate and check detected transfers between your accounts.
-6. **Export report** — the header button saves `financial-summary-YYYY-MM-DD.md` or copies it to your clipboard.
+1. **Import:** drag a CSV or PDF onto the welcome screen.
+2. **Check the columns:** for CSVs, the app guesses which column is the date, description, and amount; you confirm or fix it. Pick or create an account for the statement.
+3. **Overview:** see your income, expenses, net flow, and monthly trend. Toggle options to hide internal transfers or group payees together.
+4. **Transactions:** search, filter by date/amount/type, and scroll every line.
+5. **Review:** resolve anything flagged as a duplicate and check detected transfers between your accounts.
+6. **Export report:** the header button saves `financial-summary-YYYY-MM-DD.md` or copies it to your clipboard.
 
 ### Supported formats
 
@@ -39,13 +39,13 @@ Reading a bank statement line by line is slow and easy to get wrong. This tool d
 |--------|--------|
 | **CSV** | Columns are auto-detected, with a manual mapping step to confirm |
 | **Excel (.xlsx / .xls)** | First worksheet is read, header row auto-detected, then reuses the CSV mapping step |
-| **OFX / QFX** | Structured banking format — transactions are read directly, no mapping needed |
+| **OFX / QFX** | Structured banking format: transactions are read directly, no mapping needed |
 | **Digital PDF** | Text is extracted directly from the PDF |
 | **Scanned PDF** | Falls back to on-device OCR (image-to-text) when there's no text layer |
 
 ### Your privacy
 
-Everything happens locally. The app has no server that receives your data. By default the data lives only in the current browser tab — close the tab and it's gone. The report you export is generated on your machine; nothing is uploaded when you create or download it.
+Everything happens locally. The app has no server that receives your data. By default the data lives only in the current browser tab. Close the tab and it's gone. The report you export is generated on your machine; nothing is uploaded when you create or download it.
 
 If you'd rather not re-import every visit, flip the **"Save on device"** switch in the top-right. Your statements are then saved **in your own browser** (never sent anywhere) and reloaded automatically next time. Turn it off and the saved copy is deleted immediately.
 

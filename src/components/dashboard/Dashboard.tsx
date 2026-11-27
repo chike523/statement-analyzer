@@ -13,9 +13,11 @@ import {
 import { useDashboardData, useApp } from '@/context/AppContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { MerchantList } from '@/components/dashboard/MerchantList'
+import { NextActions } from '@/components/dashboard/NextActions'
+import { EmptyState } from '@/components/ui/empty-state'
 import { Switch } from '@/components/ui/switch'
 import { formatCurrency } from '@/lib/utils'
-import { TrendingDown, TrendingUp, Wallet, Hash } from 'lucide-react'
+import { TrendingDown, TrendingUp, Wallet, Hash, Upload } from 'lucide-react'
 import type { TopMerchant } from '@/types/transaction'
 
 export function Dashboard() {
@@ -55,9 +57,12 @@ export function Dashboard() {
 
   if (transactionCount === 0) {
     return (
-      <div className="flex h-48 items-center justify-center text-[var(--color-muted-foreground)]">
-        Import statements to see your dashboard.
-      </div>
+      <EmptyState
+        icon={Upload}
+        title="No overview yet"
+        description="Import a statement to see income, spending, and cash flow."
+        action={{ label: 'Import a statement', onClick: () => setActiveTab('upload') }}
+      />
     )
   }
 
@@ -76,6 +81,8 @@ export function Dashboard() {
 
   return (
     <div className="min-w-0 space-y-6 overflow-x-hidden">
+      <NextActions />
+
       <div className="flex flex-col gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-card)] px-3 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6 sm:gap-y-3 sm:px-4">
         {showTransferToggle && (
           <label className="flex min-h-10 cursor-pointer items-center gap-2 text-sm sm:min-h-0">

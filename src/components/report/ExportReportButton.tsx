@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { FileDown, Copy, Check, Loader2 } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
 import { Button } from '@/components/ui/button'
-import { generateReportMarkdown, reportFilename } from '@/lib/report'
+import { generateReportMarkdown, generateReportPlainText, reportFilename } from '@/lib/report'
 import { copyTextToClipboard, downloadTextFile } from '@/lib/download'
 
 export function ExportReportButton() {
@@ -51,8 +51,9 @@ export function ExportReportButton() {
   const handleCopy = async () => {
     setLoading(true)
     try {
-      const markdown = await generateReportMarkdown(buildInput())
-      const ok = await copyTextToClipboard(markdown)
+      // Plain text for AI paste — Markdown hashes/tables read poorly in chat.
+      const text = await generateReportPlainText(buildInput())
+      const ok = await copyTextToClipboard(text)
       if (ok) {
         setCopied(true)
         setTimeout(() => setCopied(false), 2000)

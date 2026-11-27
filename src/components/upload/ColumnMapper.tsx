@@ -67,7 +67,7 @@ export function ColumnMapper({
                 }))
               }
             >
-              <option value="">— Select —</option>
+              <option value="">Select</option>
               {headers.map((h) => (
                 <option key={h} value={h}>
                   {h}

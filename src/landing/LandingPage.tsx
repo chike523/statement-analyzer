@@ -28,7 +28,7 @@ const CAPABILITIES = [
     name: 'PDF',
     len: 3,
     tag: 'Text layer',
-    copy: 'Digital statements are read page by page — no upload, no cloud OCR queue.',
+    copy: 'Digital statements are read page by page. No upload, no cloud OCR queue.',
     mark: 'PDF',
     surface: 'm-surface-2',
   },
@@ -44,7 +44,7 @@ const CAPABILITIES = [
     name: 'SQL',
     len: 3,
     tag: 'DuckDB',
-    copy: 'Totals, months, and payees come from real SQL in the browser — not hand-rolled loops.',
+    copy: 'Totals, months, and payees come from real SQL in the browser, not hand-rolled loops.',
     mark: 'SQL',
     surface: 'm-surface-4',
   },
@@ -83,7 +83,7 @@ const FAQS = [
   },
   {
     q: 'What does the export include?',
-    a: 'A Markdown financial summary built on-device — cash flow, payees, recurring charges, transfers, and notes you can hand to an advisor or paste into an AI assistant.',
+    a: 'A Markdown financial summary built on-device: cash flow, payees, recurring charges, transfers, and notes you can hand to an advisor or paste into an AI assistant.',
   },
 ] as const
 
@@ -250,7 +250,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
           <div className="cv-grid l-panel__body">
             <div className="cv-copy">
               <p className="m-text-5">
-                Import a bank statement and see income, spending, recurring bills, and odd charges —
+                Import a bank statement and see income, spending, recurring bills, and odd charges,
                 analyzed entirely in your browser. Nothing is uploaded.
               </p>
               <ul className="cv-cues">
@@ -260,7 +260,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
                 </li>
                 <li>
                   <span className="m-badge">PDF</span>
-                  <p className="m-text">Digital statements and scanned pages — OCR stays on this device.</p>
+                  <p className="m-text">Digital statements and scanned pages. OCR stays on this device.</p>
                 </li>
                 <li>
                   <span className="m-badge">OCR</span>
@@ -268,7 +268,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
                 </li>
                 <li>
                   <span className="m-badge">Offline</span>
-                  <p className="m-text">After load, analysis runs in the tab — no account wall to start.</p>
+                  <p className="m-text">After load, analysis runs in the tab. No account wall to start.</p>
                 </li>
               </ul>
               <button type="button" className="m-btn" onClick={start}>
@@ -340,7 +340,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
                   CSP
                 </span>
                 <h3 className="m-text-3">Hardened build</h3>
-                <p className="m-text">Production ships a tight Content-Security-Policy — no surprise network calls for your data.</p>
+                <p className="m-text">Production ships a tight Content-Security-Policy. No surprise network calls for your data.</p>
               </article>
             </div>
           </div>
@@ -356,7 +356,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
           </div>
           <div className="l-panel__body">
             <p className="m-text-5 ds-lead">
-              One importer covers the messy reality of bank exports — spreadsheets, OFX, clean PDFs, and
+              One importer covers the messy reality of bank exports: spreadsheets, OFX, clean PDFs, and
               scans.
             </p>
             <div className="ds-rows">
@@ -471,13 +471,13 @@ export function LandingPage({ onStart }: LandingPageProps) {
             </div>
             <div className="ap-notes">
               <p className="m-text-5 ap-lead">
-                Scroll the product story. Phone screens are illustrative samples labeled for demo — your
+                Scroll the product story. Phone screens are illustrative samples labeled for demo. Your
                 numbers appear only after you import.
               </p>
               <article className="ap-note is-on" data-sa-note="0">
                 <h3 className="m-text-3">Overview that is actually SQL</h3>
                 <p className="m-text">
-                  Monthly cash flow, income, expenses, and top payees are queried from DuckDB in a worker —
+                  Monthly cash flow, income, expenses, and top payees are queried from DuckDB in a worker,
                   the same engine that powers serious analytics, running locally.
                 </p>
               </article>
@@ -491,7 +491,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
               <article className="ap-note" data-sa-note="2">
                 <h3 className="m-text-3">Export without the upload</h3>
                 <p className="m-text">
-                  Generate a Markdown brief on-device for an advisor — or paste it into an assistant — without
+                  Generate a Markdown brief on-device for an advisor, or paste it into an assistant, without
                   sending the raw statement anywhere.
                 </p>
               </article>
@@ -532,7 +532,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
             <div className="fq-side">
               <p className="m-text-5">Privacy-first means the FAQ should be boringly clear.</p>
               <button type="button" className="m-link" onClick={start}>
-                <span className="m-link__label">Skip ahead — open the importer</span>
+                <span className="m-link__label">Skip ahead: open the importer</span>
               </button>
             </div>
             <div>
@@ -558,7 +558,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
           <div className="ct-body l-panel__body">
             <div>
               <p className="m-text-5 ct-lead">
-                Drop a statement in. See the shape of your month. Export a summary — all without a server
+                Drop a statement in. See the shape of your month. Export a summary, all without a server
                 seeing a single line.
               </p>
               <div className="ct-actions">

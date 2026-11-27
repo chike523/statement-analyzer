@@ -86,7 +86,7 @@ export function AccountPicker({
       <label className="text-sm font-medium">Assign to account</label>
       <div className="flex gap-2">
         <Select value={value} onChange={(e) => onChange(e.target.value)} className="flex-1">
-          <option value="">— Select account —</option>
+          <option value="">Select account</option>
           {accounts.map((a) => (
             <option key={a.id} value={a.id}>
               {a.name} ({a.currency})

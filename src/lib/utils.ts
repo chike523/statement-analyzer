@@ -15,7 +15,7 @@ export function formatCurrency(amount: number, currency = 'USD'): string {
 }
 
 export function formatDate(date: string): string {
-  if (!date) return '—'
+  if (!date) return '-'
   const normalized = date.slice(0, 10)
   const parsed = new Date(`${normalized}T00:00:00`)
   if (Number.isNaN(parsed.getTime())) return date

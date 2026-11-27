@@ -1,7 +1,7 @@
 {
   "name": "Statement Analyzer",
   "short_name": "Statements",
-  "description": "Local financial statement analyzer — 100% browser-based",
+  "description": "Local financial statement analyzer. 100% browser-based.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#fafafa",

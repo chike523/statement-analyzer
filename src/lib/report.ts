@@ -141,6 +141,222 @@ function tableRow(cells: string[]): string {
   return `| ${cells.join(' | ')} |`
 }
 
+function plainLine(label: string, value: string): string {
+  return `${label}: ${value}`
+}
+
+/** Clean paste-friendly text for AI chats — no Markdown hashes, bold, or tables. */
+export function formatReportPlainText(data: ReportData): string {
+  const fmt = (n: number) => formatCurrency(n, data.currency)
+  const lines: string[] = []
+
+  lines.push('Financial Statement Summary')
+  lines.push(
+    plainLine(
+      'Generated',
+      `${formatDate(data.generatedAt.slice(0, 10))} at ${data.generatedAt.slice(11, 19)} UTC`,
+    ),
+  )
+  lines.push(
+    'Source: Statement Analyzer (local browser analysis; verify figures against original bank statements)',
+  )
+  lines.push('')
+
+  lines.push('Executive summary')
+  if (data.period.from && data.period.to) {
+    lines.push(
+      plainLine('Period covered', `${formatDate(data.period.from)} to ${formatDate(data.period.to)}`),
+    )
+  }
+  lines.push(
+    plainLine(
+      'Accounts',
+      data.accounts.map((a) => `${a.name} (${a.currency})`).join(', ') || '-',
+    ),
+  )
+  lines.push(
+    plainLine(
+      'Transactions analyzed',
+      `${data.transactionCount.toLocaleString()}${
+        data.totalInDatabase !== data.transactionCount
+          ? ` (of ${data.totalInDatabase.toLocaleString()} in session)`
+          : ''
+      }`,
+    ),
+  )
+  lines.push(plainLine('Total income', fmt(data.stats.total_income)))
+  lines.push(plainLine('Total expenses', fmt(data.stats.total_expenses)))
+  lines.push(plainLine('Net cash flow', fmt(data.stats.net_flow)))
+  if (data.grossStats && data.dashboardPrefs.exclude_transfers) {
+    lines.push(plainLine('Gross income (before transfer exclusion)', fmt(data.grossStats.total_income)))
+    lines.push(
+      plainLine('Gross expenses (before transfer exclusion)', fmt(data.grossStats.total_expenses)),
+    )
+    lines.push(
+      plainLine('Internal transfers excluded from totals', `${data.excludedTransferCount} transactions`),
+    )
+  }
+  lines.push('')
+
+  lines.push('Data sources')
+  if (data.importBatches.length === 0) {
+    lines.push('No import metadata recorded for this session.')
+  } else {
+    for (const batch of data.importBatches) {
+      const acct = accountName(data.accounts, batch.account_id)
+      const skipped =
+        batch.skipped_count > 0 ? ` (${batch.skipped_count} skipped)` : ''
+      lines.push(
+        `- ${batch.filename} → ${acct}: ${batch.row_count.toLocaleString()} rows imported${skipped}`,
+      )
+    }
+  }
+  lines.push('')
+
+  if (data.breakdown.length > 1) {
+    lines.push('Account breakdown')
+    for (const row of data.breakdown) {
+      lines.push(
+        `- ${row.account_name}: income ${fmt(row.income)}, expenses ${fmt(row.expenses)}, net ${fmt(row.net)}`,
+      )
+    }
+    lines.push('')
+  }
+
+  lines.push('Monthly cash flow')
+  if (data.monthly.length === 0) {
+    lines.push('No monthly data for current filters.')
+  } else {
+    for (const m of data.monthly) {
+      lines.push(
+        `- ${m.month}: income ${fmt(m.income)}, expenses ${fmt(m.expenses)}, net ${fmt(m.net)}`,
+      )
+    }
+  }
+  lines.push('')
+
+  lines.push('Top expense payees')
+  if (data.expensePayees.length === 0) {
+    lines.push('No expense payees in range.')
+  } else {
+    data.expensePayees.forEach((p, i) => {
+      lines.push(
+        `${i + 1}. ${p.merchant}: ${fmt(-p.total)} (${p.count} txns, ${pct(p.total, data.stats.total_expenses)} of expenses)`,
+      )
+    })
+  }
+  lines.push('')
+
+  lines.push('Top income sources')
+  if (data.incomePayees.length === 0) {
+    lines.push('No income sources in range.')
+  } else {
+    data.incomePayees.forEach((p, i) => {
+      lines.push(
+        `${i + 1}. ${p.merchant}: ${fmt(p.total)} (${p.count} txns, ${pct(p.total, data.stats.total_income)} of income)`,
+      )
+    })
+  }
+  lines.push('')
+
+  lines.push('Recurring payments detected')
+  if (data.recurringPatterns.length === 0) {
+    lines.push('No recurring patterns detected (minimum 3 similar debits required).')
+  } else {
+    for (const p of data.recurringPatterns.slice(0, 20)) {
+      lines.push(
+        `- ${p.merchant}: ${fmt(p.amount)} ${p.interval}, ${p.transaction_ids.length} occurrences, ${Math.round(p.confidence * 100)}% confidence`,
+      )
+    }
+  }
+  lines.push('')
+
+  lines.push('Internal transfers')
+  lines.push(plainLine('Pairs detected', String(data.transferPairs.length)))
+  lines.push(plainLine('Active pairs (not dismissed)', String(data.activeTransferPairs.length)))
+  lines.push(
+    plainLine(
+      'Excluded from income/expense totals',
+      data.dashboardPrefs.exclude_transfers
+        ? `yes (${data.excludedTransferCount} transactions)`
+        : 'no',
+    ),
+  )
+  lines.push('')
+
+  lines.push('Largest outflows')
+  if (data.largestDebits.length === 0) {
+    lines.push('None in range.')
+  } else {
+    for (const t of data.largestDebits) {
+      lines.push(
+        `- ${formatDate(t.date)} · ${t.description.slice(0, 80)} · ${fmt(t.amount)} · ${accountName(data.accounts, t.account_id)}`,
+      )
+    }
+  }
+  lines.push('')
+
+  lines.push('Largest inflows')
+  if (data.largestCredits.length === 0) {
+    lines.push('None in range.')
+  } else {
+    for (const t of data.largestCredits) {
+      lines.push(
+        `- ${formatDate(t.date)} · ${t.description.slice(0, 80)} · ${fmt(t.amount)} · ${accountName(data.accounts, t.account_id)}`,
+      )
+    }
+  }
+  lines.push('')
+
+  lines.push('Data quality notes')
+  lines.push(
+    plainLine(
+      'Duplicate groups',
+      `${data.duplicateGroups.length} (${data.pendingDuplicates} pending review)`,
+    ),
+  )
+  lines.push(
+    plainLine(
+      'Payee grouping in report',
+      data.dashboardPrefs.merchant_mode === 'smart'
+        ? 'grouped (structured rules)'
+        : 'exact descriptions',
+    ),
+  )
+  if (
+    data.filters.account_id !== 'all' ||
+    data.filters.date_from ||
+    data.filters.date_to ||
+    data.filters.search
+  ) {
+    lines.push('Active filters applied:')
+    if (data.filters.account_id !== 'all') {
+      lines.push(`- Account: ${accountName(data.accounts, data.filters.account_id)}`)
+    }
+    if (data.filters.date_from) lines.push(`- From: ${data.filters.date_from}`)
+    if (data.filters.date_to) lines.push(`- To: ${data.filters.date_to}`)
+    if (data.filters.search) lines.push(`- Search: "${data.filters.search}"`)
+    if (data.filters.type !== 'all') lines.push(`- Type: ${data.filters.type}`)
+  } else {
+    lines.push(plainLine('Active filters', 'none (full dataset)'))
+  }
+  lines.push('')
+
+  lines.push('Questions for a financial advisor or AI')
+  lines.push('1. Is my net cash flow sustainable over the period covered?')
+  lines.push('2. Which expense categories or payees dominate spending, and are they justified?')
+  lines.push('3. Are there recurring charges I should cancel, renegotiate, or monitor?')
+  lines.push('4. Do large one-off transactions suggest upcoming risks or opportunities?')
+  lines.push('5. How much of my income/expense is internal transfers vs real economic activity?')
+  lines.push('6. What budget or savings rate would be realistic given this cash flow pattern?')
+  lines.push('')
+  lines.push(
+    'This report is generated locally from parsed statement data. It is not tax, legal, or investment advice. Confirm all figures against original bank records before making decisions.',
+  )
+
+  return lines.join('\n')
+}
+
 export function formatReportMarkdown(data: ReportData): string {
   const fmt = (n: number) => formatCurrency(n, data.currency)
   const lines: string[] = []
@@ -148,7 +364,7 @@ export function formatReportMarkdown(data: ReportData): string {
   lines.push('# Financial Statement Summary Report')
   lines.push('')
   lines.push(`**Generated:** ${formatDate(data.generatedAt.slice(0, 10))} at ${data.generatedAt.slice(11, 19)} UTC`)
-  lines.push('**Source:** Statement Analyzer (local browser analysis — verify figures against original bank statements)')
+  lines.push('**Source:** Statement Analyzer (local browser analysis; verify figures against original bank statements)')
   lines.push('')
 
   lines.push('## 1. Executive summary')
@@ -156,7 +372,7 @@ export function formatReportMarkdown(data: ReportData): string {
   if (data.period.from && data.period.to) {
     lines.push(`- **Period covered:** ${formatDate(data.period.from)} to ${formatDate(data.period.to)}`)
   }
-  lines.push(`- **Accounts:** ${data.accounts.map((a) => `${a.name} (${a.currency})`).join(', ') || '—'}`)
+  lines.push(`- **Accounts:** ${data.accounts.map((a) => `${a.name} (${a.currency})`).join(', ') || '-'}`)
   lines.push(`- **Transactions analyzed:** ${data.transactionCount.toLocaleString()}${data.totalInDatabase !== data.transactionCount ? ` (of ${data.totalInDatabase.toLocaleString()} in session)` : ''}`)
   lines.push(`- **Total income:** ${fmt(data.stats.total_income)}`)
   lines.push(`- **Total expenses:** ${fmt(data.stats.total_expenses)}`)
@@ -364,4 +580,9 @@ export function reportFilename(): string {
 export async function generateReportMarkdown(input: ReportInput): Promise<string> {
   const data = await gatherReportData(input)
   return formatReportMarkdown(data)
+}
+
+export async function generateReportPlainText(input: ReportInput): Promise<string> {
+  const data = await gatherReportData(input)
+  return formatReportPlainText(data)
 }
